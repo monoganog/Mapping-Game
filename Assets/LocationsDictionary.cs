@@ -4,12 +4,17 @@ using UnityEngine;
 public class LocationsDictionary : MonoBehaviour
 {
 
-    public Dictionary<string, string> locationsDictionary;
+    public Dictionary<string, string> locationsDictionary = new Dictionary<string, string>()
+    {
+        {"x,y,z", "London"},
+    };
+
+
 
     // Start is called before the first frame update
     void Start()
     {
-        locationsDictionary.Add("x,y,z", "London");
+
         CheckDictionary("x,y,z");
     }
 
