@@ -8,15 +8,29 @@ public class RetrieveMap : MonoBehaviour
     public MeshFilter mesh;
 
     public Texture2D tex;
+
+
+    private int zoom, y, z;
+
     // Start is called before the first frame update
     void Start()
     {
-        RetrieveElevation(14, 9, 4);
+
+        zoom = 14;
+        y = 9;
+        z = 4;
+        RetrieveElevation(zoom, y, z);
 
         tex = (Texture2D)mapMaterial.mainTexture;
 
         CreateMesh(tex, 64, 64, 0.001f);
-        RetrieveAMap(14, 9, 4);
+        RetrieveAMap(zoom, y, z);
+    }
+
+    private void UpdateMap()
+    {
+        RetrieveElevation(zoom, y, z);
+        RetrieveAMap(zoom, y, z);
     }
 
     // Update is called once per frame
@@ -25,11 +39,23 @@ public class RetrieveMap : MonoBehaviour
 
     }
 
+    public void ZoomIn()
+    {
+        zoom++;
+        UpdateMap();
+    }
+
+    public void ZoomOut()
+    {
+        zoom--;
+        UpdateMap();
+    }
+
     public void RetrieveAMap(int x, int y, int zoom)
     {
         // https://tiles.wmflabs.org/hillshading/${z}/${x}/${y}.png
         //https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png
-        string url = "https://tiles.wmflabs.org/hillshading/$" + zoom + "/$" + x + "/$" + y + ".png";
+        string url = "https://stamen-tiles.a.ssl.fastly.net/toner/" + zoom + "/" + x + "/" + y + ".png";
         WebRequest www = WebRequest.Create(url);
         ((HttpWebRequest)www).UserAgent = "jeff";
         var response = www.GetResponse();
