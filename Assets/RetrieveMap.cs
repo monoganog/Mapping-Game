@@ -12,31 +12,45 @@ public class RetrieveMap : MonoBehaviour
 
     private int zoom, y, z;
 
+    public LocationsObject[] locations;
+
+    LocationsObject currentLocation;
+    private int lastIndex;
+
     // Start is called before the first frame update
     void Start()
     {
 
-        zoom = 14;
-        y = 9;
-        z = 4;
-        RetrieveElevation(zoom, y, z);
+        NextLocation();
 
         tex = (Texture2D)mapMaterial.mainTexture;
 
         CreateMesh(tex, 64, 64, 0.001f);
-        RetrieveAMap(zoom, y, z);
+
     }
 
     private void UpdateMap()
     {
-        RetrieveElevation(zoom, y, z);
-        RetrieveAMap(zoom, y, z);
+        RetrieveAMap(currentLocation.x, currentLocation.y, currentLocation.Zoom);
+        //RetrieveElevation(currentLocation.x, currentLocation.y, currentLocation.Zoom);
+
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    public void NextLocation()
+    {
+        int index = Random.Range(0, locations.Length);
+
+        currentLocation = locations[index];
+        Debug.Log(currentLocation.Name);
+        lastIndex = index;
+
+        UpdateMap();
     }
 
     public void ZoomIn()
@@ -51,15 +65,14 @@ public class RetrieveMap : MonoBehaviour
         UpdateMap();
     }
 
-    public void RetrieveAMap(int x, int y, int zoom)
+    public void RetrieveAMap(float x, float y, int zoom)
     {
-        // https://tiles.wmflabs.org/hillshading/${z}/${x}/${y}.png
-        //https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png
-        string url = "https://stamen-tiles.a.ssl.fastly.net/toner/" + zoom + "/" + x + "/" + y + ".png";
+        string url = "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + y + ".png";
+        Debug.Log(url);
         WebRequest www = WebRequest.Create(url);
-        ((HttpWebRequest)www).UserAgent = "jeff";
+        ((HttpWebRequest)www).UserAgent = "University Assignment";
         var response = www.GetResponse();
-        Debug.Log("got a rsponse");
+        Debug.Log("got a response");
         Texture2D texture = new Texture2D(2, 2);
         ImageConversion.LoadImage(texture, new BinaryReader(response.GetResponseStream()).ReadBytes(100000));
         mapMaterial.mainTexture = texture;
@@ -121,7 +134,7 @@ public class RetrieveMap : MonoBehaviour
 
     }
 
-    public void RetrieveElevation(int x, int y, int zoom)
+    public void RetrieveElevation(float x, float y, int zoom)
     {
         string url = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/" + zoom + "/" + x + "/" + y + ".png";
         WebRequest www = WebRequest.Create(url);
