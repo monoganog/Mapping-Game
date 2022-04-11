@@ -3,7 +3,10 @@ public class LocationsObject
 {
     // Start is called before the first frame update
     public string Name;
-    public int Zoom = 13;
-    public float x;
-    public float y;
+    public int Zoom = 12;
+    public float latitude;
+    public float longitude;
+
+    public bool included;
+
 }
