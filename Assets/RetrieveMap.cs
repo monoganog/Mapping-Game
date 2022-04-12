@@ -18,7 +18,7 @@ public class RetrieveMap : MonoBehaviour
     public MeshFilter mesh;
 
     public Texture2D tex;
-    public Vector2 locationDebug;
+    public Vector2 currentLocationVector;
 
     private int zoom, y, z;
 
@@ -37,7 +37,7 @@ public class RetrieveMap : MonoBehaviour
 
         tex = (Texture2D)mapMaterial.mainTexture;
 
-        CreateMesh(tex, 64, 64, 0.0000001f);
+        //CreateMesh(tex, 64, 64, 0.0000001f);
 
     }
 
@@ -46,31 +46,32 @@ public class RetrieveMap : MonoBehaviour
         //RetrieveAMap(currentLocation.x, currentLocation.y, currentLocation.Zoom);
         //RetrieveElevation(currentLocation.x, currentLocation.y, currentLocation.Zoom);
 
-        locationDebug = WorldToTilePos(currentLocation.longitude, currentLocation.latitude, currentLocation.Zoom);
+        //currentLocationVector = WorldToTilePos(currentLocation.x, currentLocation.y, currentLocation.Zoom);
 
-        RetrieveAMap(mapMaterial, locationDebug.x, locationDebug.y, currentLocation.Zoom);
+
 
 
         //RetrieveElevation(locationDebug.x, locationDebug.y, currentLocation.Zoom);
 
-        Debug.Log(locationDebug);
     }
 
     public void UpdateMapUsingSlippy()
     {
-        RetrieveAMap(mapMaterial, locationDebug.x, locationDebug.y, currentLocation.Zoom);
-        RetrieveAMap(mapMiddleMaterial, locationDebug.x, locationDebug.y, currentLocation.Zoom);
-        RetrieveAMap(mapTopMaterial, locationDebug.x, locationDebug.y - 1, currentLocation.Zoom);
-        RetrieveAMap(mapBottomMaterial, locationDebug.x, locationDebug.y + 1, currentLocation.Zoom);
-        RetrieveAMap(mapLeftMaterial, locationDebug.x - 1, locationDebug.y, currentLocation.Zoom);
-        RetrieveAMap(mapRightMaterial, locationDebug.x + 1, locationDebug.y, currentLocation.Zoom);
 
 
-        RetrieveAMap(mapTopLeftMaterial, locationDebug.x - 1, locationDebug.y - 1, currentLocation.Zoom);
-        RetrieveAMap(mapTopRightMaterial, locationDebug.x + 1, locationDebug.y - 1, currentLocation.Zoom);
+        RetrieveAMap(mapMaterial, currentLocationVector.x, currentLocationVector.y, currentLocation.Zoom);
+        RetrieveAMap(mapMiddleMaterial, currentLocationVector.x, currentLocationVector.y, currentLocation.Zoom);
+        RetrieveAMap(mapTopMaterial, currentLocationVector.x, currentLocationVector.y - 1, currentLocation.Zoom);
+        RetrieveAMap(mapBottomMaterial, currentLocationVector.x, currentLocationVector.y + 1, currentLocation.Zoom);
+        RetrieveAMap(mapLeftMaterial, currentLocationVector.x - 1, currentLocationVector.y, currentLocation.Zoom);
+        RetrieveAMap(mapRightMaterial, currentLocationVector.x + 1, currentLocationVector.y, currentLocation.Zoom);
 
-        RetrieveAMap(mapBottomLeftMaterial, locationDebug.x - 1, locationDebug.y + 1, currentLocation.Zoom);
-        RetrieveAMap(mapBottomRightMaterial, locationDebug.x + 1, locationDebug.y + 1, currentLocation.Zoom);
+
+        RetrieveAMap(mapTopLeftMaterial, currentLocationVector.x - 1, currentLocationVector.y - 1, currentLocation.Zoom);
+        RetrieveAMap(mapTopRightMaterial, currentLocationVector.x + 1, currentLocationVector.y - 1, currentLocation.Zoom);
+
+        RetrieveAMap(mapBottomLeftMaterial, currentLocationVector.x - 1, currentLocationVector.y + 1, currentLocation.Zoom);
+        RetrieveAMap(mapBottomRightMaterial, currentLocationVector.x + 1, currentLocationVector.y + 1, currentLocation.Zoom);
     }
 
     public Vector2 WorldToTilePos(double lon, double lat, int zoom)
@@ -79,10 +80,6 @@ public class RetrieveMap : MonoBehaviour
         p.x = Mathf.Round((float)((lon + 180.0) / 360.0 * (1 << zoom)));
         p.y = Mathf.Round((float)((1.0 - Math.Log(Math.Tan(lat * Math.PI / 180.0) +
             1.0 / Math.Cos(lat * Math.PI / 180.0)) / Math.PI) / 2.0 * (1 << zoom)));
-
-
-
-
         return p;
     }
 
@@ -107,10 +104,11 @@ public class RetrieveMap : MonoBehaviour
             currentLocation = locations[index];
 
         }
-        Debug.Log(currentLocation.Name);
+        Debug.Log(currentLocation.Name + currentLocation.x + currentLocation.y);
         lastIndex = index;
-
-        UpdateMap();
+        currentLocationVector = WorldToTilePos(currentLocation.x, currentLocation.y, currentLocation.Zoom);
+        Debug.Log(currentLocationVector);
+        UpdateMapUsingSlippy();
     }
 
     public void ZoomIn()
@@ -129,36 +127,36 @@ public class RetrieveMap : MonoBehaviour
 
     public void MoveUp()
     {
-        locationDebug.y--;
-        Debug.Log(locationDebug.x + "," + locationDebug.y);
+        currentLocationVector.y--;
+        Debug.Log(currentLocation.x + "," + currentLocation.y);
         UpdateMapUsingSlippy();
     }
 
     public void MoveDown()
     {
-        locationDebug.y++;
-        Debug.Log(locationDebug.x + "," + locationDebug.y);
+        currentLocationVector.y++;
+        Debug.Log(currentLocation.x + "," + currentLocation.y);
         UpdateMapUsingSlippy();
     }
 
     public void MoveRight()
     {
-        locationDebug.x++;
-        Debug.Log(locationDebug.x + "," + locationDebug.y);
+        currentLocationVector.x++;
+        Debug.Log(currentLocation.x + "," + currentLocation.y);
         UpdateMapUsingSlippy();
     }
 
     public void MoveLeft()
     {
-        locationDebug.x--;
-        Debug.Log(locationDebug.x + "," + locationDebug.y);
+        currentLocationVector.x--;
+        Debug.Log(currentLocation.x + "," + currentLocation.y);
         UpdateMapUsingSlippy();
     }
 
     public void RetrieveAMap(Material mat, float x, float y, int zoom)
     {
         string url = "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + y + ".png";
-        //Debug.Log(url);
+        Debug.Log(url);
         WebRequest www = WebRequest.Create(url);
         ((HttpWebRequest)www).UserAgent = "University Assignment";
         var response = www.GetResponse();
