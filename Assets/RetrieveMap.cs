@@ -2,6 +2,9 @@ using System;
 using System.IO;
 using System.Net;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
 public class RetrieveMap : MonoBehaviour
 {
     public Material mapMaterial;
@@ -14,7 +17,8 @@ public class RetrieveMap : MonoBehaviour
     public Material mapBottomRightMaterial;
     public Material mapLeftMaterial;
     public Material mapRightMaterial;
-
+    public AudioSource AS;
+    public AudioSource ASclick;
     public MeshFilter mesh;
 
     public Texture2D tex;
@@ -29,30 +33,33 @@ public class RetrieveMap : MonoBehaviour
 
     public float increment = 10;
 
+    public Vector2 winningLocation = new Vector2(59158.0f, 40214.0f);
+
+    public int moves = -1;
+
+    public GameObject winPanel;
+
+    public float time;
+    private bool shouldTime;
+
+    public Text timeText;
+    public Text movesText;
+
+    public Text finalText;
+
     // Start is called before the first frame update
     void Start()
     {
-
+        //winPanel.SetActive(true);
         NextLocation();
 
         tex = (Texture2D)mapMaterial.mainTexture;
 
-        //CreateMesh(tex, 64, 64, 0.0000001f);
 
     }
-
-    private void UpdateMap()
+    public void StartGame()
     {
-        //RetrieveAMap(currentLocation.x, currentLocation.y, currentLocation.Zoom);
-        //RetrieveElevation(currentLocation.x, currentLocation.y, currentLocation.Zoom);
-
-        //currentLocationVector = WorldToTilePos(currentLocation.x, currentLocation.y, currentLocation.Zoom);
-
-
-
-
-        //RetrieveElevation(locationDebug.x, locationDebug.y, currentLocation.Zoom);
-
+        shouldTime = true;
     }
 
     public void UpdateMapUsingSlippy()
@@ -72,6 +79,22 @@ public class RetrieveMap : MonoBehaviour
 
         RetrieveAMap(mapBottomLeftMaterial, currentLocationVector.x - 1, currentLocationVector.y + 1, currentLocation.Zoom);
         RetrieveAMap(mapBottomRightMaterial, currentLocationVector.x + 1, currentLocationVector.y + 1, currentLocation.Zoom);
+
+        moves = moves + 1;
+        movesText.text = moves.ToString();
+        CheckWinCondition();
+
+    }
+
+    private void CheckWinCondition()
+    {
+        if (currentLocationVector == winningLocation)
+        {
+            Debug.Log("you win");
+            AS.Play();
+            winPanel.SetActive(true);
+            finalText.text = "You made it to Flinders in " + moves.ToString() + " moves and " + time.ToString("F1") + " seconds. Well done!";
+        }
     }
 
     public Vector2 WorldToTilePos(double lon, double lat, int zoom)
@@ -83,10 +106,14 @@ public class RetrieveMap : MonoBehaviour
         return p;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Retry()
     {
+        SceneManager.LoadScene(0);
+    }
 
+    public void Quit()
+    {
+        Application.Quit();
     }
 
     public void NextLocation()
@@ -111,19 +138,17 @@ public class RetrieveMap : MonoBehaviour
         UpdateMapUsingSlippy();
     }
 
-    public void ZoomIn()
+
+    public void Update()
     {
-        currentLocation.Zoom++;
-        Debug.Log("Zoom level" + currentLocation.Zoom);
-        UpdateMapUsingSlippy();
+        if (shouldTime)
+        {
+            time += Time.deltaTime;
+            timeText.text = time.ToString("F1");
+
+        }
     }
 
-    public void ZoomOut()
-    {
-        currentLocation.Zoom--;
-        Debug.Log("Zoom level" + currentLocation.Zoom);
-        UpdateMapUsingSlippy();
-    }
 
     public void MoveUp()
     {
@@ -155,8 +180,13 @@ public class RetrieveMap : MonoBehaviour
 
     public void RetrieveAMap(Material mat, float x, float y, int zoom)
     {
+
+
+        //https://a.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png 
+        //string url = "https://a.tile.openstreetmap.fr/hot/${" + zoom + "}/${" + x + "}/${" + y + "}.png";
+
         string url = "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + y + ".png";
-        Debug.Log(url);
+        //Debug.Log(url);
         WebRequest www = WebRequest.Create(url);
         ((HttpWebRequest)www).UserAgent = "University Assignment";
         var response = www.GetResponse();
